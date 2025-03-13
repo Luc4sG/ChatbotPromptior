@@ -1,9 +1,10 @@
 #expose the model with langserve 
 from fastapi import FastAPI, requests
 from fastapi.middleware.cors import CORSMiddleware
+from langserve import add_routes
 from pydantic import BaseModel
 from model import model
-import uvicorn
+from model import QueryInput
 
 app = FastAPI(title="RAG Chatbot")
 
@@ -20,16 +21,10 @@ class QueryRequest(BaseModel):
     language: str
 
 
-@app.post("/query")
-def query_endpoint(req: QueryRequest):
-    answer = model.get_query(req.question, req.language)
-    return {"response": answer}
+chain = model.chain
+add_routes(app,chain.with_types(input_type=QueryInput) ,path="/chat")
 
 @app.get("/")
 def root():
     return {"response": "Chatbot RAG funcionando!"}
 
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="localhost", port=8000)

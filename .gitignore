@@ -4,3 +4,5 @@
 /API/__pycache__
 /API/db_chroma
 /API/.env
+oa_api_key.txt
+ls_api_key.txt

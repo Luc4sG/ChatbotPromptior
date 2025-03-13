@@ -5,7 +5,7 @@ from typing import List
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from config import settings
-#TODO: revisar si son los imports correctos
+
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain.schema import Document
@@ -15,7 +15,7 @@ from langchain_community.document_loaders import WebBaseLoader, PyPDFLoader
 class DataStore:
     def __init__(self):
         """Inicializa la base de datos vectorial y carga los datos si es necesario."""
-        self.embeddings = OpenAIEmbeddings(openai_api_key=settings.openai_api_key)
+        self.embeddings = OpenAIEmbeddings(openai_api_key=self.get_openai_api_key())
         self.vectorstore = Chroma(
             collection_name=settings.collection_name,
             embedding_function=self.embeddings,
@@ -26,9 +26,15 @@ class DataStore:
         data = self.query_all()
         if not data["ids"]:  
             self.load_documents()
+    
+    def get_openai_api_key(self):
+        secret_path = "/run/secrets/openai_api_key"
+        if os.path.exists(secret_path):
+            with open(secret_path, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        return os.getenv("OPENAI_API_KEY", "default_key_if_missing")
 
     def load_documents(self):
-        """Carga documentos y sitios web en la base vectorial si aún no están almacenados."""
         web_documents = self.ingest_url()
         pdf_documents = self.ingest_pdf(settings.pdf_path)
 
@@ -44,8 +50,8 @@ class DataStore:
 
     def ingest_pdf(self, pdf_path: str) -> List[Document]: 
         if not os.path.exists(pdf_path):
-            #TODO: transalate to english
-            print(f"el archivo pdf {pdf_path} no existe")
+
+            print(f"the pdf file path {pdf_path} does not exist")
             return []
 
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
@@ -60,8 +66,8 @@ class DataStore:
 
     def ingest_url(self) -> List[Document]:      
         if not settings.urls:
-                        #TODO: transalate to english
-            print("no hay urls configuradas para la ingesta")
+
+            print("No URLs provided")
             return []
 
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
@@ -70,7 +76,7 @@ class DataStore:
             web_path=settings.urls,
             bs_kwargs=dict(
                 parse_only=bs4.SoupStrainer(
-                    #TODO: move to config file
+
                     class_=("SITE_HEADER", "PAGES_CONTAINER", "SITE_FOOTER")
                 )
             ),
@@ -90,6 +96,5 @@ class DataStore:
         return self.vectorstore
 
 
-# Instancia única de la base de datos vectorial
 vectorstore = DataStore()
 
