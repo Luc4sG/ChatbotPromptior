@@ -1,0 +1,6 @@
+.env
+/db_chroma
+/__pycache__
+/API/__pycache__
+/API/db_chroma
+/API/.env

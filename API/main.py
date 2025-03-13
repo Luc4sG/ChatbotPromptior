@@ -1,10 +1,19 @@
 #expose the model with langserve 
 from fastapi import FastAPI, requests
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from model import model
 import uvicorn
 
 app = FastAPI(title="RAG Chatbot")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"],  
+)
 
 class QueryRequest(BaseModel):
     question: str

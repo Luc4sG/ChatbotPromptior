@@ -33,7 +33,6 @@ class DataStore:
         pdf_documents = self.ingest_pdf(settings.pdf_path)
 
         all_documents = web_documents + pdf_documents
-        print(all_documents)
         if all_documents:  
             self.vectorstore.add_documents(all_documents)
 
@@ -43,8 +42,7 @@ class DataStore:
 
         return text
 
-
-    def ingest_pdf(self, pdf_path: str) -> List[Document]:      
+    def ingest_pdf(self, pdf_path: str) -> List[Document]: 
         if not os.path.exists(pdf_path):
             #TODO: transalate to english
             print(f"el archivo pdf {pdf_path} no existe")
@@ -72,7 +70,7 @@ class DataStore:
             web_path=settings.urls,
             bs_kwargs=dict(
                 parse_only=bs4.SoupStrainer(
-                    
+                    #TODO: move to config file
                     class_=("SITE_HEADER", "PAGES_CONTAINER", "SITE_FOOTER")
                 )
             ),
@@ -94,4 +92,4 @@ class DataStore:
 
 # Instancia única de la base de datos vectorial
 vectorstore = DataStore()
-print(vectorstore.query_all())
+

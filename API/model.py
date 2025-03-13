@@ -14,7 +14,9 @@ class Model:
             model="gpt-3.5-turbo",
         )
         self.vectorstore = vectorstore.get_vectorstore()
-        self.retriever = self.vectorstore.as_retriever()
+        #se selecciona el retriever de tipo mmr para una busqueda variada que incluya tanto el pdf como la pagina de Promptior
+        #self.retriever = self.vectorstore.as_retriever(search_type="mmr", search_kwargs={"k": 5, "fetch_k": 10, "lambda_mult": 0.5})
+        self.retriever = self.vectorstore.as_retriever(search_kwargs={"k": 5})
         self.prompt = ChatPromptTemplate.from_messages([
             SystemMessagePromptTemplate.from_template(
                 "You are an AI assistant that answers questions based on the provided context. "
@@ -32,7 +34,6 @@ class Model:
     def get_query(self, question: str, language: str):
 
         docs = self.retriever.invoke(question)
-        print(docs)
         context = " ".join([doc.page_content  for doc in docs])
         message = self.prompt.format_messages(
             question=question,
