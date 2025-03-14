@@ -1,5 +1,7 @@
 import os
 import re
+import boto3
+import json
 import bs4
 from typing import List
 
@@ -27,13 +29,19 @@ class DataStore:
         if not data["ids"]:  
             self.load_documents()
     
-    def get_openai_api_key(self):
-        secret_path = "/run/secrets/openai_api_key"
-        if os.path.exists(secret_path):
-            with open(secret_path, "r", encoding="utf-8") as f:
-                return f.read().strip()
-        return os.getenv("OPENAI_API_KEY", "default_key_if_missing")
-
+    def get_openai_api_key():
+        secret_name = os.getenv("AWS_SECRET_NAME", "chatbot_api_key")
+        region_name = os.getenv("AWS_REGION", "us-east-1")
+        try:
+            client = boto3.client("secretsmanager", region_name=region_name)
+            
+            response = client.get_secret_value(SecretId=secret_name)
+            secret = json.loads(response["SecretString"])
+            return secret["OPENAI_API_KEY"]
+        except Exception as e:
+            print(f"Error al obtener secreto: {e}")
+            return os.getenv("OPENAI_API_KEY", "default_key_if_missing")
+    
     def load_documents(self):
         web_documents = self.ingest_url()
         pdf_documents = self.ingest_pdf(settings.pdf_path)

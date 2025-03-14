@@ -1,6 +1,7 @@
 #modulo de Modelo LLM va a contener el promt pre establecido, limitaciones, lenguaje y la defincion propia del modelo llm de openai
 import os
-
+import boto3
+import json
 from pydantic import BaseModel
 from config import settings
 from data_store import vectorstore 
@@ -46,12 +47,18 @@ class Model:
             "question": lambda x: x["question"]
         }) | self.prompt | self.model | self.output_parser)
 
-    def get_openai_api_key(self):
-        secret_path = "/run/secrets/openai_api_key"
-        if os.path.exists(secret_path):
-            with open(secret_path, "r", encoding="utf-8") as f:
-                return f.read().strip()
-        return os.getenv("OPENAI_API_KEY", "default_key_if_missing")
+    def get_openai_api_key():
+        secret_name = os.getenv("AWS_SECRET_NAME", "chatbot_api_key")
+        region_name = os.getenv("AWS_REGION", "us-east-1")
+        try:
+            client = boto3.client("secretsmanager", region_name=region_name)
+            
+            response = client.get_secret_value(SecretId=secret_name)
+            secret = json.loads(response["SecretString"])
+            return secret["OPENAI_API_KEY"]
+        except Exception as e:
+            print(f"Error al obtener secreto: {e}")
+            return os.getenv("OPENAI_API_KEY", "default_key_if_missing")
 
     def validate_input(self, inputs: dict):
         validated_data = QueryInput(**inputs)  
