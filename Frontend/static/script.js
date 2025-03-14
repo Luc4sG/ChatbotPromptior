@@ -23,7 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
         userInput.value = "";
 
         try {
-            const response = await fetch("http://localhost:8000/chat/invoke", {
+            const API_URL = window.env?.API_URL || "http://localhost:8000";
+            const response = await fetch(`${API_URL}/chat/invoke`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
