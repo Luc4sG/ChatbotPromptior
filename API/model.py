@@ -47,7 +47,7 @@ class Model:
             "question": lambda x: x["question"]
         }) | self.prompt | self.model | self.output_parser)
 
-    def get_openai_api_key():
+    def get_openai_api_key(self):
         secret_name = os.getenv("AWS_SECRET_NAME", "chatbot_api_key")
         region_name = os.getenv("AWS_REGION", "us-east-1")
         try:

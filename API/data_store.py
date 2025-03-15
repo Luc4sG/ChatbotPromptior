@@ -29,7 +29,7 @@ class DataStore:
         if not data["ids"]:  
             self.load_documents()
     
-    def get_openai_api_key():
+    def get_openai_api_key(self):
         secret_name = os.getenv("AWS_SECRET_NAME", "chatbot_api_key")
         region_name = os.getenv("AWS_REGION", "us-east-1")
         try:
